@@ -40,7 +40,7 @@ func loadConfig() error {
 type Pong struct{}
 
 func (pong Pong) Accept(msg *irc.Msg) bool { return msg.Cmd == "PING" }
-func (pong Pong) Handle(msg *irc.Msg, send chan *irc.Msg) {
+func (pong Pong) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
 	send <- &irc.Msg{Cmd: "PONG", Params: msg.Params}
 }
 
@@ -48,7 +48,7 @@ func (pong Pong) Handle(msg *irc.Msg, send chan *irc.Msg) {
 type Echo struct{}
 
 func (echo Echo) Accept(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
-func (echo Echo) Handle(msg *irc.Msg, send chan *irc.Msg) {
+func (echo Echo) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
 	send <- &irc.Msg{Cmd: "PRIVMSG", Params: msg.Params}
 }
 
