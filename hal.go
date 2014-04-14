@@ -36,12 +36,20 @@ func loadConfig() error {
 	return nil
 }
 
+// Pong plays your game.
+type Pong struct{}
+
+func (pong Pong) Accept(msg *irc.Msg) bool { return msg.Cmd == "PING" }
+func (pong Pong) Handle(msg *irc.Msg, send chan *irc.Msg) {
+	send <- &irc.Msg{Cmd: "PONG", Params: msg.Params}
+}
+
 // Echo talks back.
 type Echo struct{}
 
-func (echo Echo) Accept(msg *irc.Msg) bool { return true }
+func (echo Echo) Accept(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
 func (echo Echo) Handle(msg *irc.Msg, send chan *irc.Msg) {
-	send <- msg
+	send <- &irc.Msg{Cmd: "PRIVMSG", Params: msg.Params}
 }
 
 func main() {
@@ -53,6 +61,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	client.Register(Pong{})
 	client.Register(Echo{})
+	client.Nick("hal")
+	client.Join(config.Chan)
 	client.Listen()
 }
