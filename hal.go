@@ -17,7 +17,7 @@ var config = struct {
 	Host string
 	Chan string
 }{
-	Host: "irc.freenode.net:6667",
+	Host: "127.0.0.1:6667",
 	Chan: "#bots",
 }
 
