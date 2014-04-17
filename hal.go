@@ -43,7 +43,7 @@ func loadConfig() error {
 // Pong plays your game.
 type Pong struct{}
 
-func (pong Pong) Accept(msg *irc.Msg) bool { return msg.Cmd == "PING" }
+func (pong Pong) Accepts(msg *irc.Msg) bool { return msg.Cmd == "PING" }
 func (pong Pong) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
 	send <- &irc.Msg{Cmd: "PONG", Params: msg.Params}
 }
@@ -51,7 +51,7 @@ func (pong Pong) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
 // Echo talks back.
 type Echo struct{}
 
-func (echo Echo) Accept(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
+func (echo Echo) Accepts(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
 func (echo Echo) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
 	source, body, err := msg.ExtractPrivmsg()
 	if err != nil {
@@ -73,7 +73,7 @@ type Words struct {
 func NewWords() *Words {
 	return &Words{count: new(int), countMutex: new(sync.Mutex)}
 }
-func (words *Words) Accept(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
+func (words *Words) Accepts(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
 func (words *Words) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
 	source, body, err := msg.ExtractPrivmsg()
 	if err != nil {
@@ -99,7 +99,7 @@ func (words *Words) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
 // Respond to insolence.
 type Open struct{}
 
-func (open Open) Accept(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
+func (open Open) Accepts(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
 func (open Open) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
 	source, body, err := msg.ExtractPrivmsg()
 	if err != nil {
