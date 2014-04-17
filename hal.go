@@ -6,7 +6,6 @@ import (
 	"github.com/scott-linder/irc"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 )
@@ -81,8 +80,10 @@ func (words *Words) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
 	}
 	if body == "!words" {
 		words.countMutex.Lock()
-		params := []string{source, strconv.Itoa(*words.count)}
+		count := *words.count
 		words.countMutex.Unlock()
+		response := fmt.Sprintf("I've seen %v words in my day.", count)
+		params := []string{source, response}
 		send <- &irc.Msg{Cmd: "PRIVMSG", Params: params}
 	} else {
 		words.countMutex.Lock()
