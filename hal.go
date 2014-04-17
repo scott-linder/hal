@@ -18,9 +18,11 @@ const (
 var config = struct {
 	Host string
 	Chan string
+	Nick string
 }{
 	Host: "127.0.0.1:6667",
 	Chan: "#bots",
+	Nick: "hal",
 }
 
 // loadConfig attempts to load config from configFilename.
@@ -133,7 +135,7 @@ func main() {
 	client.Register(Echo{})
 	client.Register(NewWords())
 	client.Register(Open{})
-	client.Nick("hal")
+	client.Nick(config.Nick)
 	client.Join(config.Chan)
 	client.Listen()
 }
