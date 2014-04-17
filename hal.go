@@ -69,11 +69,11 @@ type Words struct {
 	countMutex *sync.Mutex
 }
 
-func NewWords() Words {
-	return Words{count: new(int), countMutex: new(sync.Mutex)}
+func NewWords() *Words {
+	return &Words{count: new(int), countMutex: new(sync.Mutex)}
 }
-func (words Words) Accept(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
-func (words Words) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
+func (words *Words) Accept(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
+func (words *Words) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
 	source, body, err := msg.ExtractPrivmsg()
 	if err != nil {
 		log.Println(err)
