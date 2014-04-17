@@ -52,7 +52,15 @@ type Echo struct{}
 
 func (echo Echo) Accept(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
 func (echo Echo) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
-	send <- &irc.Msg{Cmd: "PRIVMSG", Params: msg.Params}
+	source, body, err := msg.ExtractPrivmsg()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if strings.HasPrefix(body, "!echo ") {
+		params := []string{source, strings.TrimPrefix(body, "!echo ")}
+		send <- &irc.Msg{Cmd: "PRIVMSG", Params: params}
+	}
 }
 
 // Words counts words.
@@ -68,6 +76,7 @@ func (words Words) Accept(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
 func (words Words) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
 	source, body, err := msg.ExtractPrivmsg()
 	if err != nil {
+		log.Println(err)
 		return
 	}
 	if body == "!words" {
