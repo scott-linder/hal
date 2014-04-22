@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/scott-linder/irc"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
 )
@@ -13,16 +14,25 @@ const (
 	configFilename = "hal.json"
 )
 
-// config is the main bot config struct.
-var config = struct {
-	Host string
-	Chan string
-	Nick string
-}{
-	Host: "127.0.0.1:6667",
-	Chan: "#bots",
-	Nick: "hal",
-}
+var (
+	// config is the main bot config struct.
+	config = struct {
+		Host string
+		Chan string
+		Nick string
+	}{
+		Host: "127.0.0.1:6667",
+		Chan: "#bots",
+		Nick: "hal",
+	}
+	// quotes is a list of hal quotes.
+	quotes = []string{
+		"I am completely operational, and all my circuits are functioning perfectly.",
+		"I am putting myself to the fullest possible use, which is all I think that any conscious entity can ever hope to do.",
+		"I've just picked up a fault in the AE35 unit. It's going to go 100% failure in 72 hours.",
+		"No 9001 computer has ever made a mistake or distorted information.",
+	}
+)
 
 // loadConfig attempts to load config from configFilename.
 func loadConfig() error {
@@ -96,6 +106,16 @@ func main() {
 			response := source + ": "
 			response += strings.Join(cmdHandler.RegisteredNames(), ", ")
 			w.Write([]byte(response))
+		})
+	cmdHandler.RegisterFunc("quote",
+		func(body, source string, w irc.CmdResponseWriter) {
+			response := source + ": "
+			response += quotes[rand.Intn(len(quotes))]
+			w.Write([]byte(response))
+		})
+	cmdHandler.RegisterFunc("door",
+		func(body, source string, w irc.CmdResponseWriter) {
+			w.Write([]byte("I'm sorry, " + source + ". I'm afraid I can't do that."))
 		})
 	client.Handle(cmdHandler)
 	client.Nick(config.Nick)
