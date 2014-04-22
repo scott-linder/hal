@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"os/user"
+	"runtime"
 	"strings"
 )
 
@@ -123,6 +124,22 @@ func main() {
 			} else {
 				fmt.Fprintf(w, "%v: %+v", source, user)
 			}
+		})
+	cmdHandler.RegisterFunc("gover",
+		func(body, source string, w irc.CmdResponseWriter) {
+			version := runtime.Version()
+			fmt.Fprintf(w, "%v: %v", source, version)
+		})
+	cmdHandler.RegisterFunc("gos",
+		func(body, source string, w irc.CmdResponseWriter) {
+			gos := runtime.NumGoroutine()
+			fmt.Fprintf(w, "%v: %v goroutines", source, gos)
+		})
+	cmdHandler.RegisterFunc("mem",
+		func(body, source string, w irc.CmdResponseWriter) {
+			var memstats runtime.MemStats
+			runtime.ReadMemStats(&memstats)
+			fmt.Fprintf(w, "%v: %+v", source, memstats)
 		})
 	client.Handle(cmdHandler)
 	client.Nick(config.Nick)
