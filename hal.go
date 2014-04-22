@@ -98,24 +98,21 @@ func main() {
 	cmdHandler.RegisterFunc("echo",
 		func(body, source string, w irc.CmdResponseWriter) {
 			if body != "" {
-				w.Write([]byte(source + ": " + body))
+				fmt.Fprintf(w, "%v: %v", source, body)
 			}
 		})
 	cmdHandler.RegisterFunc("help",
 		func(body, source string, w irc.CmdResponseWriter) {
-			response := source + ": "
-			response += strings.Join(cmdHandler.RegisteredNames(), ", ")
-			w.Write([]byte(response))
+			fmt.Fprintf(w, "%v: %v", source,
+				strings.Join(cmdHandler.RegisteredNames(), ", "))
 		})
 	cmdHandler.RegisterFunc("quote",
 		func(body, source string, w irc.CmdResponseWriter) {
-			response := source + ": "
-			response += quotes[rand.Intn(len(quotes))]
-			w.Write([]byte(response))
+			fmt.Fprintf(w, "%v: %V", source, quotes[rand.Intn(len(quotes))])
 		})
 	cmdHandler.RegisterFunc("door",
 		func(body, source string, w irc.CmdResponseWriter) {
-			w.Write([]byte("I'm sorry, " + source + ". I'm afraid I can't do that."))
+			fmt.Fprintf(w, "I'm sorry, %v. I'm afraid I can't do that.", source)
 		})
 	client.Handle(cmdHandler)
 	client.Nick(config.Nick)
