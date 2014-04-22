@@ -84,12 +84,18 @@ func main() {
 	}
 	client.Handle(Pong{})
 	client.Handle(Open{})
-	cmdHandler := irc.NewCmdHandler("!")
+	cmdHandler := irc.NewCmdHandler("»")
 	cmdHandler.RegisterFunc("echo",
 		func(body, source string, w irc.CmdResponseWriter) {
 			if body != "" {
 				w.Write([]byte(source + ": " + body))
 			}
+		})
+	cmdHandler.RegisterFunc("help",
+		func(body, source string, w irc.CmdResponseWriter) {
+			response := source + ": "
+			response += strings.Join(cmdHandler.RegisteredNames(), ", ")
+			w.Write([]byte(response))
 		})
 	client.Handle(cmdHandler)
 	client.Nick(config.Nick)
