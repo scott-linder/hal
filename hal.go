@@ -6,6 +6,7 @@ import (
 	"github.com/scott-linder/irc"
 	"log"
 	"os"
+	"strings"
 )
 
 const (
@@ -46,6 +47,31 @@ func (pong Pong) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
 	send <- &irc.Msg{Cmd: "PONG", Params: msg.Params}
 }
 
+// Open the pod bay doors, hal.
+type Open struct{}
+
+func (open Open) Accepts(msg *irc.Msg) bool { return msg.Cmd == "PRIVMSG" }
+func (open Open) Handle(msg *irc.Msg, send chan<- *irc.Msg) {
+	receiver, body, err := msg.ExtractPrivmsg()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	nick, err := msg.ExtractNick()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	lowerbody := strings.ToLower(body)
+	if strings.Contains(lowerbody, "open the pod bay doors") &&
+		strings.Contains(lowerbody, "hal") {
+
+		response := fmt.Sprintf("I can't let you do that, %v.", nick)
+		params := []string{receiver, response}
+		send <- &irc.Msg{Cmd: "PRIVMSG", Params: params}
+	}
+}
+
 func main() {
 	fmt.Println("I am a HAL 9001 computer.")
 	if err := loadConfig(); err != nil {
@@ -57,6 +83,7 @@ func main() {
 
 	}
 	client.Handle(Pong{})
+	client.Handle(Open{})
 	cmdHandler := irc.NewCmdHandler("!")
 	cmdHandler.RegisterFunc("echo",
 		func(body, source string, w irc.CmdResponseWriter) {
