@@ -111,7 +111,7 @@ func main() {
 		})
 	cmdHandler.RegisterFunc("quote",
 		func(body, source string, w io.Writer) {
-			fmt.Fprintf(w, "%v: %V", source, quotes[rand.Intn(len(quotes))])
+			fmt.Fprintf(w, "%v: %v", source, quotes[rand.Intn(len(quotes))])
 		})
 	cmdHandler.RegisterFunc("door",
 		func(body, source string, w io.Writer) {
