@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/scott-linder/irc"
+	"io"
 	"log"
 	"math/rand"
 	"os"
@@ -98,26 +99,26 @@ func main() {
 	client.Handle(Open{})
 	cmdHandler := irc.NewCmdHandler("»")
 	cmdHandler.RegisterFunc("echo",
-		func(body, source string, w irc.CmdResponseWriter) {
+		func(body, source string, w io.Writer) {
 			if body != "" {
 				fmt.Fprintf(w, "%v: %v", source, body)
 			}
 		})
 	cmdHandler.RegisterFunc("help",
-		func(body, source string, w irc.CmdResponseWriter) {
+		func(body, source string, w io.Writer) {
 			fmt.Fprintf(w, "%v: %v", source,
 				strings.Join(cmdHandler.RegisteredNames(), ", "))
 		})
 	cmdHandler.RegisterFunc("quote",
-		func(body, source string, w irc.CmdResponseWriter) {
+		func(body, source string, w io.Writer) {
 			fmt.Fprintf(w, "%v: %V", source, quotes[rand.Intn(len(quotes))])
 		})
 	cmdHandler.RegisterFunc("door",
-		func(body, source string, w irc.CmdResponseWriter) {
+		func(body, source string, w io.Writer) {
 			fmt.Fprintf(w, "I'm sorry, %v. I'm afraid I can't do that.", source)
 		})
 	cmdHandler.RegisterFunc("user",
-		func(body, source string, w irc.CmdResponseWriter) {
+		func(body, source string, w io.Writer) {
 			user, err := user.Lookup(body)
 			if err != nil {
 				fmt.Fprintf(w, "%v: %v", source, err)
@@ -126,17 +127,17 @@ func main() {
 			}
 		})
 	cmdHandler.RegisterFunc("gover",
-		func(body, source string, w irc.CmdResponseWriter) {
+		func(body, source string, w io.Writer) {
 			version := runtime.Version()
 			fmt.Fprintf(w, "%v: %v", source, version)
 		})
 	cmdHandler.RegisterFunc("gos",
-		func(body, source string, w irc.CmdResponseWriter) {
+		func(body, source string, w io.Writer) {
 			gos := runtime.NumGoroutine()
 			fmt.Fprintf(w, "%v: %v goroutines", source, gos)
 		})
 	cmdHandler.RegisterFunc("mem",
-		func(body, source string, w irc.CmdResponseWriter) {
+		func(body, source string, w io.Writer) {
 			var memstats runtime.MemStats
 			runtime.ReadMemStats(&memstats)
 			fmt.Fprintf(w, "%v: %+v", source, memstats)
