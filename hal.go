@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"os/user"
 	"strings"
 )
 
@@ -113,6 +114,15 @@ func main() {
 	cmdHandler.RegisterFunc("door",
 		func(body, source string, w irc.CmdResponseWriter) {
 			fmt.Fprintf(w, "I'm sorry, %v. I'm afraid I can't do that.", source)
+		})
+	cmdHandler.RegisterFunc("user",
+		func(body, source string, w irc.CmdResponseWriter) {
+			user, err := user.Lookup(body)
+			if err != nil {
+				fmt.Fprintf(w, "%v: %v", source, err)
+			} else {
+				fmt.Fprintf(w, "%v: %+v", source, user)
+			}
 		})
 	client.Handle(cmdHandler)
 	client.Nick(config.Nick)
