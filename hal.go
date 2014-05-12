@@ -1,8 +1,10 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/scott-linder/irc"
 	"io"
 	"log"
@@ -90,10 +92,14 @@ func main() {
 	if err := loadConfig(); err != nil {
 		log.Printf("error loading config file %v: %v", configFilename, err)
 	}
+	db, err := sql.Open("sqlite3", "hal.db")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
 	client, err := irc.Dial(config.Host)
 	if err != nil {
 		log.Fatal(err)
-
 	}
 	client.Handle(Pong{})
 	client.Handle(Open{})
@@ -141,6 +147,32 @@ func main() {
 			var memstats runtime.MemStats
 			runtime.ReadMemStats(&memstats)
 			fmt.Fprintf(w, "%v: %+v", source, memstats)
+		})
+	db.Exec("CREATE TABLE IF NOT EXISTS store (name TEXT PRIMARY KEY, value TEXT)")
+	cmdHandler.RegisterFunc("store",
+		func(body, source string, w io.Writer) {
+			nameValue := strings.SplitN(body, " ", 2)
+			name := nameValue[0]
+			var exists bool
+			db.QueryRow("SELECT EXISTS (SELECT 1 FROM store WHERE name=?)", name).Scan(&exists)
+			if len(nameValue) == 2 {
+				value := nameValue[1]
+				if exists {
+					db.Exec("UPDATE store SET value=? WHERE name=?)", value, name)
+				} else {
+					db.Exec("INSERT INTO store (name, value) VALUES (?, ?)", name, value)
+				}
+			} else if len(nameValue) == 1 {
+				if exists {
+					var value string
+					db.QueryRow("SELECT value FROM store WHERE name=?", name).Scan(&value)
+					fmt.Fprintf(w, "%v: %v", source, value)
+				} else {
+					fmt.Fprintf(w, "%v: no such name", source)
+				}
+			} else {
+				fmt.Fprintf(w, "%v: bad arguments", source)
+			}
 		})
 	client.Handle(cmdHandler)
 	client.Nick(config.Nick)

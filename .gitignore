@@ -27,3 +27,4 @@ _testmain.go
 
 # Bot config
 hal.json
+hal.db
