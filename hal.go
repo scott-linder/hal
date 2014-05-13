@@ -8,7 +8,6 @@ import (
 	"github.com/scott-linder/irc"
 	"io"
 	"log"
-	"math/rand"
 	"os"
 	"os/user"
 	"runtime"
@@ -31,12 +30,14 @@ var (
 		Nick: "hal",
 	}
 	// quotes is a list of hal quotes.
-	quotes = []string{
-		"I am completely operational, and all my circuits are functioning perfectly.",
-		"I am putting myself to the fullest possible use, which is all I think that any conscious entity can ever hope to do.",
-		"I've just picked up a fault in the AE35 unit. It's going to go 100% failure in 72 hours.",
-		"No 9001 computer has ever made a mistake or distorted information.",
-	}
+	/*
+		quotes = []string{
+			"I am completely operational, and all my circuits are functioning perfectly.",
+			"I am putting myself to the fullest possible use, which is all I think that any conscious entity can ever hope to do.",
+			"I've just picked up a fault in the AE35 unit. It's going to go 100% failure in 72 hours.",
+			"No 9001 computer has ever made a mistake or distorted information.",
+		}
+	*/
 )
 
 // loadConfig attempts to load config from configFilename.
@@ -115,9 +116,16 @@ func main() {
 			fmt.Fprintf(w, "%v: %v", source,
 				strings.Join(cmdHandler.RegisteredNames(), ", "))
 		})
+	db.Exec("CREATE TABLE IF NOT EXISTS quotes (id INTEGER PRIMARY KEY AUTOINCREMENT, quote STRING UNIQUE NOT NULL)")
 	cmdHandler.RegisterFunc("quote",
 		func(body, source string, w io.Writer) {
-			fmt.Fprintf(w, "%v: %v", source, quotes[rand.Intn(len(quotes))])
+			if body == "" {
+				var quote string
+				db.QueryRow("SELECT quote FROM quotes ORDER BY RANDOM() LIMIT 1").Scan(&quote)
+				fmt.Fprintf(w, "%v: %v", source, quote)
+			} else {
+				db.Exec("INSERT INTO quotes (quote) VALUES (?)", body)
+			}
 		})
 	cmdHandler.RegisterFunc("door",
 		func(body, source string, w io.Writer) {
